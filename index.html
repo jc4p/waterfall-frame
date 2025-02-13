@@ -104,6 +104,11 @@
       .modal-button.submit:hover {
         background: #27ae60;
       }
+      .modal-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
     </style>
   </head>
   <body>
@@ -120,12 +125,62 @@
     <script type="module">
       document.addEventListener('DOMContentLoaded', async function() {
 
+      const GAME_CONTRACT = '0xFC54BAe272c39074123738fB27e32F66F1A7e4f0';
+
       window.submitScore = async function() {
-        // To be implemented later
-        console.log('Submit score clicked');
+        const submitButton = document.querySelector('.modal-button.submit');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Saving...';
+
+        try {
+          const provider = window.frame.sdk.wallet.ethProvider;
+          if (!provider) {
+            console.error('No provider available');
+            return;
+          }
+
+          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+          const walletAddress = accounts[0].toLowerCase();
+          
+          // Get the final score from the display
+          const finalScore = parseInt(document.getElementById('finalScore').textContent);
+          
+          // Encode the recordScore function call
+          const functionSignature = '0x5c9c0cd4'; // recordScore(uint256)
+          const scoreHex = finalScore.toString(16).padStart(64, '0');
+          const data = functionSignature + scoreHex;
+          
+          console.log('Submitting score with data:', {
+            score: finalScore,
+            data,
+            walletAddress
+          });
+          
+          const tx = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{
+              to: GAME_CONTRACT,
+              from: walletAddress,
+              data: data
+            }]
+          });
+          
+          console.log('Transaction submitted:', tx);
+          submitButton.textContent = 'Saved!';
+          
+          // Reset game after short delay
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+          
+        } catch (error) {
+          console.error('Error submitting score:', error);
+          submitButton.textContent = 'Error - Try Again';
+          submitButton.disabled = false;
+        }
       }
 
-      window.resetGame = async function() {
+      window.resetGame = function() {
         location.reload();
       }
 
@@ -170,6 +225,56 @@
         // Update welcome message with FID
         welcomeElement.textContent = `Hi, ${window.userFid}`;
         welcomeElement.classList.add('visible');
+
+        // Switch to Base
+        // try {
+        //     await window.frame.sdk.wallet.ethProvider.request({
+        //         method: 'wallet_switchEthereumChain',
+        //         params: [{ chainId: '0x2105' }] // Base mainnet chainId
+        //     });
+        //     console.log('Successfully switched to Base');
+        // } catch (switchError) {
+        //   return
+        // }
+
+        const gameAddress = '0xFC54BAe272c39074123738fB27e32F66F1A7e4f0'
+
+        // Check which network we're on
+        const chainId = await window.frame.sdk.wallet.ethProvider.request({
+            method: 'eth_chainId'
+        });
+        console.log('Connected to network with chainId:', chainId);
+
+        const loggedInWallet = await window.frame.sdk.wallet.ethProvider.request({
+            method: 'eth_requestAccounts'
+        });
+
+        console.log('Hello, the logged in wallet is', loggedInWallet);
+
+        walletAddress = loggedInWallet[0].toLowerCase();
+        const paddedAddress = '000000000000000000000000' + walletAddress.slice(2);
+        const balanceOfData = '0x70a08231' + paddedAddress;
+
+        const balance = await window.frame.sdk.wallet.ethProvider.request({
+            method: 'eth_call',
+            params: [{
+                to: gameAddress,
+                data: balanceOfData,
+                from: walletAddress
+            }, 'latest']
+        });
+        
+        if (balance === '0x') {
+            console.log('No balance found');
+        } else {
+            const balanceHex = balance.slice(2).padStart(64, '0');
+            const decimalBalance = parseInt(balanceHex, 16) / Math.pow(10, 18);
+            console.log('$WATER Token balance:', decimalBalance);
+            
+            // You can use this balance value in your game logic
+            window.playerTokenBalance = decimalBalance;
+        }
+
 
       } catch (error) {
         console.error('Frame SDK initialization failed:', error);
