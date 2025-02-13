@@ -7,11 +7,11 @@
   "frame": {
     "version": "1",
     "name": "Waterfall",
-    "iconUrl": "https://cover-art.kasra.codes/icon-512.png",
+    "iconUrl": "https://cover-art.kasra.codes/waterfall-icon-512-maskable.png",
     "homeUrl": "https://waterfall.kasra.codes",
-    "imageUrl": "https://cover-art.kasra.codes/icon-512.png",
+    "imageUrl": "https://cover-art.kasra.codes/waterfall-icon-512-maskable.png",
     "buttonTitle": "Check this out",
-    "splashImageUrl": "https://cover-art.kasra.codes/icon-512.png",
+    "splashImageUrl": "https://cover-art.kasra.codes/waterfall-icon-512-maskable.png",
     "splashBackgroundColor": "#03A9F4",
     "webhookUrl": ""
   }
