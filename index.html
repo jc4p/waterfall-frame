@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
+    <meta name="fc:frame" content='{"version":"next","imageUrl":"https://cover-art.kasra.codes/icon-512.png","button":{"title":"Play Game","action":{"type":"launch_frame","name":"Waterfall","url":"http://localhost:5173","splashImageUrl":"https://cover-art.kasra.codes/icon-512.png","splashBackgroundColor":"#03A9F4"}}}' />
+    <title>Water Gradient</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body, html {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+      #score {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        color: white;
+        font-size: 48px;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        user-select: none;
+      }
+      #gameOverModal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        color: white;
+        font-family: Arial, sans-serif;
+        z-index: 2000;
+        min-width: 300px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      }
+      #gameOverModal h2 {
+        font-size: 36px;
+        margin-bottom: 20px;
+      }
+      #finalScore {
+        font-size: 64px;
+        margin: 30px 0;
+        color: #4a90e2;
+        text-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+      }
+      .modal-button {
+        background: #4a90e2;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 18px;
+        border-radius: 10px;
+        margin: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .modal-button:hover {
+        transform: scale(1.05);
+        background: #357abd;
+      }
+      .modal-button.submit {
+        background: #2ecc71;
+      }
+      .modal-button.submit:hover {
+        background: #27ae60;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="score">0</div>
+    <div id="gameOverModal">
+      <h2>Game Over!</h2>
+      <div id="finalScore">0</div>
+      <button class="modal-button submit" onclick="submitScore()">Submit Score</button>
+      <button class="modal-button" onclick="resetGame()">Play Again</button>
+    </div>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    <script>
+      // Global functions
+      window.submitScore = async function() {
+        // To be implemented later
+        console.log('Submit score clicked');
+      }
+
+      window.resetGame = function() {
+        location.reload();
+      }
+
+      // Initialize Frame SDK
+      (async function initializeFrameSDK() {
+        try {
+          await new Promise((resolve, reject) => {
+              const checkSDK = () => {
+                  if (window.frame?.sdk) {
+                      resolve();
+                  } else {
+                      setTimeout(checkSDK, 100);
+                  }
+              };
+              setTimeout(() => reject(new Error('Frame SDK initialization timeout')), 10000);
+              checkSDK();
+          });
+
+          // Initialize Frame SDK
+          if (window.frame?.sdk?.actions?.ready) {
+              await window.frame.sdk.actions.ready();
+              console.log('Frame SDK ready');
+          }
+
+          // Wait for user context
+          const user = await new Promise((resolve, reject) => {
+              const checkUser = () => {
+                  if (window.frame?.sdk?.context?.user) {
+                      resolve(window.frame.sdk.context.user);
+                  } else {
+                      setTimeout(checkUser, 100);
+                  }
+              };
+              setTimeout(() => reject(new Error('User context timeout')), 10000);
+              checkUser();
+          });
+          
+          window.userFid = user.fid;
+          window.userName = user.username || 'Anonymous';
+          console.log('User Info:', { fid: window.userFid, username: window.userName });
+
+        } catch (error) {
+          console.error('Frame SDK initialization failed:', error);
+        }
+      })();
+    </script>
+  </body>
+</html>
