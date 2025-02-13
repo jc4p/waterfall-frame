@@ -211,9 +211,13 @@ function handleClick(event) {
   
   event.preventDefault(); // Prevent any default behavior
   
+  // Get the correct coordinates whether it's a touch or mouse event
+  const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+  const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+  
   const rect = renderer.domElement.getBoundingClientRect();
-  const x = (event.clientX - rect.left) / rect.width;
-  const y = 1 - (event.clientY - rect.top) / rect.height;
+  const x = (clientX - rect.left) / rect.width;
+  const y = 1 - (clientY - rect.top) / rect.height;
   
   const timeSeconds = performance.now() * 0.001;
   const cycleTime = (timeSeconds * 0.5) % 1.4;
@@ -238,13 +242,19 @@ function handleClick(event) {
   }
 }
 
-// Add both mousedown and click handlers for better reliability
+// Add both mouse and touch event handlers for better reliability
 renderer.domElement.addEventListener('mousedown', handleClick);
 renderer.domElement.addEventListener('click', handleClick);
-renderer.domElement.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  handleClick(e.touches[0]);
-}, { passive: false });
+
+// Add comprehensive touch event handling
+renderer.domElement.addEventListener('touchstart', handleClick, { passive: false });
+renderer.domElement.addEventListener('touchend', (e) => e.preventDefault(), { passive: false });
+renderer.domElement.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+renderer.domElement.addEventListener('touchcancel', (e) => e.preventDefault(), { passive: false });
+
+// Prevent default touch behaviors that might interfere with the game
+document.body.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
 // Animation loop
 function animate(time) {
