@@ -251,7 +251,7 @@
 
         console.log('Hello, the logged in wallet is', loggedInWallet);
 
-        walletAddress = loggedInWallet[0].toLowerCase();
+        const walletAddress = loggedInWallet[0].toLowerCase();
         const paddedAddress = '000000000000000000000000' + walletAddress.slice(2);
         const balanceOfData = '0x70a08231' + paddedAddress;
 
